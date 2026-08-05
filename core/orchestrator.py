@@ -1,50 +1,66 @@
+from core.intent import process as classify_intent
+from core.intent import route as route_intent
 from core.io_contract import StructuredResponse
 from core.llm_client import ask
 
 
 def _run_intent(query: str, session_id: str) -> dict:
-    # TODO(Phase 2): LLM-driven intent routing (Decision #2) — classify the
-    # query into structured fields (intent, entity, args) instead of passing
-    # the raw text straight through.
-    return {"query": query, "session_id": session_id}
+    # Decision #2: the LLM classifies the query into structured fields
+    # (core.intent.classify), and plain Python dispatches on the result
+    # (core.intent.route) — no keyword if/elif on the raw text.
+    # Decision #9: dual-source sku resolution (LLM value, then regex
+    # fallback, else marked unresolved) happens inside classify_intent.
+    intent = classify_intent(query)
+    return {
+        "query": query,
+        "session_id": session_id,
+        "intent": intent,
+        "route": route_intent(intent),
+    }
 
 
 def _run_retrieval(context: dict) -> dict:
-    # TODO(Phase 3): metadata-filtered retrieval over FAISS (Decision #4) —
-    # pull relevant supplier/inventory/PO documents into the context here.
+    # TODO(later phase): metadata-filtered retrieval over FAISS (Decision #4)
+    # — pull relevant supplier/inventory/PO documents into the context here.
     context["retrieved_docs"] = []
     return context
 
 
 def _run_tools(context: dict) -> dict:
-    # TODO(Phase 4): tool registry dispatch (Decision #3) — call structured
-    # tools keyed by intent/entity and fold their results into the context.
+    # TODO(Phase 3): tool registry dispatch (Decision #3) — call the tool
+    # named by context["route"], keyed by intent/entity, and fold its
+    # results into the context.
     context["tool_results"] = []
     return context
 
 
 def _run_memory(context: dict) -> dict:
-    # TODO(Phase 5): persistent, session-keyed memory (Decision #5) — load
-    # and save session history here, keyed by context["session_id"].
+    # TODO(later phase): persistent, session-keyed memory (Decision #5) —
+    # load and save session history here, keyed by context["session_id"].
     context["memory"] = []
     return context
 
 
 def _run_safety(context: dict) -> dict:
-    # TODO(Phase 6): suggest-only validation gate (Decision #10) — enforce
-    # that the agent only proposes actions, never executes them.
+    # TODO(later phase): suggest-only validation gate (Decision #10) —
+    # enforce that the agent only proposes actions, never executes them.
     return context
 
 
 def _final_answer(context: dict) -> StructuredResponse:
+    intent = context["intent"]
     answer_text = ask(context["query"])
     return StructuredResponse(
         answer=answer_text,
-        reasoning="Direct LLM response; retrieval, tools, and memory are not wired in yet.",
+        reasoning=(
+            f"Classified intent: {intent.intent_type} (sku={intent.sku!r}, "
+            f"sku_resolved={intent.sku_resolved}). Retrieval, tools, and "
+            "memory are not wired in yet."
+        ),
         confidence="low",
         sources=[],
-        limitations=["Phase 1 build: intent, retrieval, tools, memory, and safety stages are placeholders."],
-        next_steps=["Wire up LLM-driven intent routing (Phase 2)."],
+        limitations=["Phase 2 build: retrieval, tools, memory, and safety stages are placeholders."],
+        next_steps=["Wire up the tool registry for the routed intent (Phase 3)."],
     )
 
 
