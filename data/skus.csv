@@ -1,0 +1,15 @@
+sku,supplier,lead_time_days,stock_on_hand,reorder_point,criticality_tier,region,open_po_delay_days
+SKU-1001,Acme Components,14,500,150,tier2,North America,0
+SKU-1002,Acme Components,14,80,150,tier2,North America,0
+SKU-1015,Bright Circuits Ltd,21,320,100,tier1,East Asia,0
+SKU-1023,Bright Circuits Ltd,21,40,100,tier1,East Asia,5
+SKU-1042,Bright Circuits Ltd,45,60,80,tier1,East Asia,12
+SKU-1050,Continental Fasteners,10,900,200,tier3,Europe,0
+SKU-1064,Continental Fasteners,10,150,200,tier3,Europe,0
+SKU-1078,Delta Semiconductors,30,220,120,tier1,East Asia,0
+SKU-1090,Delta Semiconductors,30,95,120,tier1,East Asia,3
+SKU-1105,Everest Metals,18,410,150,tier2,South Asia,0
+SKU-1112,Everest Metals,18,60,150,tier2,South Asia,0
+SKU-1130,Fenwick Plastics,7,700,250,tier3,North America,0
+SKU-1145,Fenwick Plastics,7,180,250,tier3,North America,9
+SKU-1160,Global Harness Co,25,300,130,tier1,Europe,0

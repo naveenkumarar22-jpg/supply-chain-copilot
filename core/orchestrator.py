@@ -1,7 +1,10 @@
+import json
+
 from core.intent import process as classify_intent
 from core.intent import route as route_intent
 from core.io_contract import StructuredResponse
 from core.llm_client import ask
+from core.tools.registry import get_tool
 
 
 def _run_intent(query: str, session_id: str) -> dict:
@@ -27,10 +30,11 @@ def _run_retrieval(context: dict) -> dict:
 
 
 def _run_tools(context: dict) -> dict:
-    # TODO(Phase 3): tool registry dispatch (Decision #3) — call the tool
-    # named by context["route"], keyed by intent/entity, and fold its
-    # results into the context.
-    context["tool_results"] = []
+    # Decision #3: look up the tool registered for this intent's route and
+    # call it with the resolved intent — a plain registry lookup, no ad hoc
+    # per-intent branching.
+    tool = get_tool(context["route"])
+    context["tool_result"] = tool(context["intent"]) if tool else None
     return context
 
 
@@ -49,18 +53,41 @@ def _run_safety(context: dict) -> dict:
 
 def _final_answer(context: dict) -> StructuredResponse:
     intent = context["intent"]
-    answer_text = ask(context["query"])
+    tool_result = context.get("tool_result")
+
+    if tool_result is None:
+        answer_text = ask(context["query"])
+        return StructuredResponse(
+            answer=answer_text,
+            reasoning=(
+                f"Classified intent: {intent.intent_type}. No tool is registered for this "
+                "intent, so this is a direct LLM response with no grounding in data."
+            ),
+            confidence="low",
+            sources=[],
+            limitations=["No matching tool for this intent; retrieval, memory, and safety stages are placeholders."],
+            next_steps=["Wire up metadata-filtered retrieval (Decision #4) for document-grounded answers."],
+        )
+
+    grounded_prompt = (
+        "Answer the user's supply chain question using ONLY the structured data below. "
+        "Be concise and specific.\n\n"
+        f"Question: {context['query']}\n\n"
+        f"Data: {json.dumps(tool_result, indent=2)}\n"
+    )
+    answer_text = ask(grounded_prompt)
+
+    reasoning = " ".join(tool_result.get("reasoning", [])) or "See tool result."
+    if tool_result.get("conflict_note"):
+        reasoning += f" Conflicting signal: {tool_result['conflict_note']}"
+
     return StructuredResponse(
         answer=answer_text,
-        reasoning=(
-            f"Classified intent: {intent.intent_type} (sku={intent.sku!r}, "
-            f"sku_resolved={intent.sku_resolved}). Retrieval, tools, and "
-            "memory are not wired in yet."
-        ),
-        confidence="low",
-        sources=[],
-        limitations=["Phase 2 build: retrieval, tools, memory, and safety stages are placeholders."],
-        next_steps=["Wire up the tool registry for the routed intent (Phase 3)."],
+        reasoning=reasoning,
+        confidence=tool_result.get("confidence", "low"),
+        sources=[f"sample dataset ({tool_result['tool']} tool, sku={tool_result.get('sku')})"],
+        limitations=["Retrieval, memory, and safety stages are placeholders."],
+        next_steps=["Wire up metadata-filtered retrieval (Decision #4) for document-grounded answers."],
     )
 
 
