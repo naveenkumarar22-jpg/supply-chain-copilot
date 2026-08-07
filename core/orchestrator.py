@@ -5,6 +5,7 @@ from core.intent import route as route_intent
 from core.io_contract import StructuredResponse
 from core.llm_client import ask
 from core.tools.registry import get_tool
+from retrieval.retriever import retrieve
 
 
 def _run_intent(query: str, session_id: str) -> dict:
@@ -23,9 +24,16 @@ def _run_intent(query: str, session_id: str) -> dict:
 
 
 def _run_retrieval(context: dict) -> dict:
-    # TODO(later phase): metadata-filtered retrieval over FAISS (Decision #4)
-    # — pull relevant supplier/inventory/PO documents into the context here.
-    context["retrieved_docs"] = []
+    # Decision #4: metadata-filtered retrieval only runs for policy_lookup
+    # intents -- other intents are grounded by a structured tool instead
+    # (see _run_tools), so there's nothing to retrieve for them.
+    intent = context["intent"]
+    if intent.intent_type != "policy_lookup":
+        context["retrieved_docs"] = []
+        return context
+
+    metadata_filter = {"criticality_tier": intent.criticality_tier} if intent.criticality_tier else None
+    context["retrieved_docs"] = retrieve(context["query"], metadata_filter=metadata_filter)
     return context
 
 
@@ -52,23 +60,33 @@ def _run_safety(context: dict) -> dict:
 
 
 def _final_answer(context: dict) -> StructuredResponse:
-    intent = context["intent"]
     tool_result = context.get("tool_result")
+    retrieved_docs = context.get("retrieved_docs") or []
 
-    if tool_result is None:
-        answer_text = ask(context["query"])
-        return StructuredResponse(
-            answer=answer_text,
-            reasoning=(
-                f"Classified intent: {intent.intent_type}. No tool is registered for this "
-                "intent, so this is a direct LLM response with no grounding in data."
-            ),
-            confidence="low",
-            sources=[],
-            limitations=["No matching tool for this intent; retrieval, memory, and safety stages are placeholders."],
-            next_steps=["Wire up metadata-filtered retrieval (Decision #4) for document-grounded answers."],
-        )
+    if tool_result is not None:
+        return _answer_from_tool(context, tool_result)
+    if retrieved_docs:
+        return _answer_from_retrieval(context, retrieved_docs)
+    return _answer_ungrounded(context)
 
+
+def _answer_ungrounded(context: dict) -> StructuredResponse:
+    intent = context["intent"]
+    answer_text = ask(context["query"])
+    return StructuredResponse(
+        answer=answer_text,
+        reasoning=(
+            f"Classified intent: {intent.intent_type}. No tool or retrieved document "
+            "applies, so this is a direct LLM response with no grounding in data."
+        ),
+        confidence="low",
+        sources=[],
+        limitations=["No matching tool or document for this intent; memory and safety stages are placeholders."],
+        next_steps=["Wire up persistent, session-keyed memory (Decision #5)."],
+    )
+
+
+def _answer_from_tool(context: dict, tool_result: dict) -> StructuredResponse:
     grounded_prompt = (
         "Answer the user's supply chain question using ONLY the structured data below. "
         "Be concise and specific.\n\n"
@@ -86,8 +104,29 @@ def _final_answer(context: dict) -> StructuredResponse:
         reasoning=reasoning,
         confidence=tool_result.get("confidence", "low"),
         sources=[f"sample dataset ({tool_result['tool']} tool, sku={tool_result.get('sku')})"],
-        limitations=["Retrieval, memory, and safety stages are placeholders."],
-        next_steps=["Wire up metadata-filtered retrieval (Decision #4) for document-grounded answers."],
+        limitations=["Memory and safety stages are placeholders."],
+        next_steps=["Wire up persistent, session-keyed memory (Decision #5)."],
+    )
+
+
+def _answer_from_retrieval(context: dict, retrieved_docs: list) -> StructuredResponse:
+    context_block = "\n\n".join(f"[{doc['id']}] {doc['text']}" for doc in retrieved_docs)
+    grounded_prompt = (
+        "Answer the user's supply chain question using ONLY the document excerpts below. "
+        "Cite which document id(s) support your answer. If the excerpts don't answer the "
+        "question, say so plainly rather than guessing.\n\n"
+        f"Question: {context['query']}\n\n"
+        f"Documents:\n{context_block}\n"
+    )
+    answer_text = ask(grounded_prompt)
+
+    return StructuredResponse(
+        answer=answer_text,
+        reasoning=f"Retrieved {len(retrieved_docs)} document chunk(s) via metadata-filtered semantic search.",
+        confidence="high",
+        sources=[f"{doc['id']} ({doc['metadata']['doc_type']}: {doc['metadata']['topic']})" for doc in retrieved_docs],
+        limitations=["Memory and safety stages are placeholders."],
+        next_steps=["Wire up persistent, session-keyed memory (Decision #5)."],
     )
 
 

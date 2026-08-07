@@ -6,9 +6,10 @@ from pydantic import BaseModel, ValidationError
 
 from core.llm_client import ask
 
-IntentType = Literal["supplier_delay_check", "inventory_risk_check", "unknown"]
+IntentType = Literal["supplier_delay_check", "inventory_risk_check", "policy_lookup", "unknown"]
 
 _SKU_PATTERN = re.compile(r"\bSKU-\d+\b", re.IGNORECASE)
+_TIER_PATTERN = re.compile(r"\btier[\s-]?([123])\b", re.IGNORECASE)
 _REQUIRES_SKU = {"supplier_delay_check"}
 
 _CLASSIFICATION_PROMPT = """You are an intent classifier for a supply chain operations copilot.
@@ -16,14 +17,16 @@ _CLASSIFICATION_PROMPT = """You are an intent classifier for a supply chain oper
 Classify the user's query into exactly one of these intent types:
 - supplier_delay_check: the user asks whether a specific supplier or SKU is at risk of, or already experiencing, a delay.
 - inventory_risk_check: the user asks about stock-out or inventory risk, generally or across items, not tied to one specific SKU.
+- policy_lookup: the user asks about a policy, SOP, procedure, or process -- e.g. escalation steps, handling rules, sourcing guidance -- rather than asking about a specific SKU's live data.
 - unknown: anything else -- small talk, unrelated topics, or queries that don't fit the above.
 
 Also extract these arguments if present in the query, else use null:
 - sku: a stock keeping unit identifier, e.g. "SKU-1042".
 - supplier_id: a supplier identifier.
+- criticality_tier: a part criticality tier mentioned in the query, normalized to "tier1", "tier2", or "tier3".
 
 Respond with ONLY a JSON object in exactly this shape:
-{{"intent_type": "...", "sku": ... or null, "supplier_id": ... or null}}
+{{"intent_type": "...", "sku": ... or null, "supplier_id": ... or null, "criticality_tier": ... or null}}
 
 Query: "{query}"
 """
@@ -33,6 +36,7 @@ class Intent(BaseModel):
     intent_type: IntentType
     sku: Optional[str] = None
     supplier_id: Optional[str] = None
+    criticality_tier: Optional[str] = None
     sku_resolved: bool = True
 
 
@@ -44,6 +48,7 @@ def classify(query: str) -> Intent:
             intent_type=payload.get("intent_type", "unknown"),
             sku=payload.get("sku"),
             supplier_id=payload.get("supplier_id"),
+            criticality_tier=payload.get("criticality_tier"),
         )
     except ValidationError:
         return Intent(intent_type="unknown")
@@ -77,13 +82,32 @@ def resolve_sku(intent: Intent, query: str) -> Intent:
     return intent
 
 
+def _normalize_tier(value: str) -> str:
+    match = _TIER_PATTERN.search(value)
+    return f"tier{match.group(1)}" if match else value
+
+
+def resolve_criticality_tier(intent: Intent, query: str) -> Intent:
+    # Same dual-source pattern as resolve_sku (Decision #9), but softer:
+    # criticality_tier is an optional search refinement, not a required
+    # argument, so an unresolved tier just means "search without a filter"
+    # rather than blocking the pipeline.
+    if intent.criticality_tier:
+        intent.criticality_tier = _normalize_tier(intent.criticality_tier)
+        return intent
+    match = _TIER_PATTERN.search(query)
+    if match:
+        intent.criticality_tier = f"tier{match.group(1)}"
+    return intent
+
+
 def route(intent: Intent) -> str:
     # Deterministic dispatch: a plain lookup on the LLM's classified
     # intent_type, not keyword-matching on the raw query text.
-    # TODO(Phase 3): point these at real tool-registry entries (Decision #3).
     routes = {
         "supplier_delay_check": "supplier_delay_tool",
         "inventory_risk_check": "inventory_risk_tool",
+        "policy_lookup": "retrieval",
         "unknown": "no_tool",
     }
     return routes.get(intent.intent_type, "no_tool")
@@ -91,4 +115,5 @@ def route(intent: Intent) -> str:
 
 def process(query: str) -> Intent:
     intent = classify(query)
-    return resolve_sku(intent, query)
+    intent = resolve_sku(intent, query)
+    return resolve_criticality_tier(intent, query)

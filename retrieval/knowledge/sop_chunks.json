@@ -1,0 +1,52 @@
+[
+  {
+    "id": "sop-escalation-001",
+    "text": "Escalation SOP for Tier-1 Supplier Delays: If a Tier-1 critical-part supplier reports or is detected to be running more than 5 business days behind on an open purchase order, the buyer must notify the Supply Chain Manager within 24 hours. The Supply Chain Manager convenes a review with Procurement and Engineering within 2 business days to assess dual-sourcing options and expedited freight. Any Tier-1 delay exceeding 10 business days automatically triggers a formal Supplier Risk Review and notification to the VP of Operations.",
+    "metadata": {
+      "doc_type": "sop",
+      "topic": "supplier_delay_escalation",
+      "criticality_tier": "tier1",
+      "region": "all"
+    }
+  },
+  {
+    "id": "policy-reorder-001",
+    "text": "Reorder and Safety Stock Policy: Reorder points are calculated as average daily usage times lead time, plus a safety stock buffer. Tier-1 critical parts carry a 25% safety stock buffer; Tier-2 parts carry 15%; Tier-3 parts carry 10%. When on-hand stock falls at or below the reorder point, Procurement must issue a replenishment purchase order within 2 business days.",
+    "metadata": {
+      "doc_type": "policy",
+      "topic": "reorder_safety_stock",
+      "criticality_tier": "all",
+      "region": "all"
+    }
+  },
+  {
+    "id": "procedure-tier1-handling-001",
+    "text": "Tier-1 Critical Part Handling Procedure: Tier-1 parts must be dual-sourced wherever technically feasible, with a minimum of two qualified suppliers on file. Any single-sourced Tier-1 part requires a documented risk waiver signed by the Supply Chain Manager, renewed quarterly. Receiving must inspect and log Tier-1 shipments within 4 hours of dock arrival.",
+    "metadata": {
+      "doc_type": "procedure",
+      "topic": "critical_part_handling",
+      "criticality_tier": "tier1",
+      "region": "all"
+    }
+  },
+  {
+    "id": "note-sourcing-east-asia-001",
+    "text": "Regional Sourcing Note - East Asia: Suppliers based in East Asia typically carry longer nominal lead times (20-45 days) due to ocean freight transit. Lunar New Year (late Jan - mid Feb) and Golden Week (early Oct) are known seasonal risk windows; Procurement should place East Asia orders at least 3 weeks ahead of these windows to avoid compounding delays.",
+    "metadata": {
+      "doc_type": "note",
+      "topic": "regional_sourcing",
+      "criticality_tier": "all",
+      "region": "east_asia"
+    }
+  },
+  {
+    "id": "policy-quality-hold-001",
+    "text": "Incoming Quality Hold Policy: Any shipment failing incoming quality inspection is placed on Quality Hold and excluded from available stock-on-hand counts until disposition. Tier-1 parts on Quality Hold trigger an automatic notification to both Procurement and Quality Engineering.",
+    "metadata": {
+      "doc_type": "policy",
+      "topic": "quality_hold",
+      "criticality_tier": "tier1",
+      "region": "all"
+    }
+  }
+]

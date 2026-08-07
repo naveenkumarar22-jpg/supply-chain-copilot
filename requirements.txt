@@ -2,3 +2,5 @@ openai
 pydantic
 pydantic-settings
 python-dotenv
+faiss-cpu
+numpy
