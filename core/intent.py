@@ -11,6 +11,7 @@ IntentType = Literal["supplier_delay_check", "inventory_risk_check", "policy_loo
 _SKU_PATTERN = re.compile(r"\bSKU-\d+\b", re.IGNORECASE)
 _TIER_PATTERN = re.compile(r"\btier[\s-]?([123])\b", re.IGNORECASE)
 _REQUIRES_SKU = {"supplier_delay_check"}
+_KNOWN_TIERS = {"tier1", "tier2", "tier3"}
 
 _CLASSIFICATION_PROMPT = """You are an intent classifier for a supply chain operations copilot.
 
@@ -94,10 +95,17 @@ def resolve_criticality_tier(intent: Intent, query: str) -> Intent:
     # rather than blocking the pipeline.
     if intent.criticality_tier:
         intent.criticality_tier = _normalize_tier(intent.criticality_tier)
-        return intent
-    match = _TIER_PATTERN.search(query)
-    if match:
-        intent.criticality_tier = f"tier{match.group(1)}"
+    else:
+        match = _TIER_PATTERN.search(query)
+        if match:
+            intent.criticality_tier = f"tier{match.group(1)}"
+
+    # Validation gate: after normalization/fallback, if the value still isn't
+    # one of our known tiers, drop it and search unfiltered rather than passing
+    # an unknown value through to an exact-match filter that would match nothing.
+    if intent.criticality_tier not in _KNOWN_TIERS:
+        intent.criticality_tier = None
+
     return intent
 
 
