@@ -24,7 +24,7 @@ Classify the user's query into exactly one of these intent types:
 Also extract these arguments if present in the query, else use null:
 - sku: a stock keeping unit identifier, e.g. "SKU-1042".
 - supplier_id: a supplier identifier.
-- criticality_tier: a part criticality tier mentioned in the query, normalized to "tier1", "tier2", or "tier3".
+- criticality_tier: ONLY if the query explicitly names a tier number (e.g. "tier 1", "tier-2", "tier 3"), normalized to "tier1", "tier2", or "tier3". If the query uses vague criticality language ("most critical", "high priority", "least important") WITHOUT naming a specific tier number, return null -- do NOT infer or guess a tier.
 
 Respond with ONLY a JSON object in exactly this shape:
 {{"intent_type": "...", "sku": ... or null, "supplier_id": ... or null, "criticality_tier": ... or null}}
