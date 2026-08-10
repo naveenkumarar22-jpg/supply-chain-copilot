@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     openai_api_key: str
     openai_model: str = "gpt-4o-mini"
     openai_embedding_model: str = "text-embedding-3-small"
+    memory_db_path: str = "memory/memory.db"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

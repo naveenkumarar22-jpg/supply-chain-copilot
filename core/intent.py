@@ -15,16 +15,25 @@ _KNOWN_TIERS = {"tier1", "tier2", "tier3"}
 
 _CLASSIFICATION_PROMPT = """You are an intent classifier for a supply chain operations copilot.
 
+Recent conversation turns in this session (oldest first, may be empty). Use
+this ONLY to resolve a reference in the current query -- words like "that",
+"it", or "the same one" -- to a specific sku/supplier/tier already mentioned.
+Never let it override an entity the current query states explicitly, and
+never invent an entity that appears in neither the history nor the query:
+{memory_context}
+
 Classify the user's query into exactly one of these intent types:
 - supplier_delay_check: the user asks whether a specific supplier or SKU is at risk of, or already experiencing, a delay.
 - inventory_risk_check: the user asks about stock-out or inventory risk, generally or across items, not tied to one specific SKU.
 - policy_lookup: the user asks about a policy, SOP, procedure, or process -- e.g. escalation steps, handling rules, sourcing guidance -- rather than asking about a specific SKU's live data.
 - unknown: anything else -- small talk, unrelated topics, or queries that don't fit the above.
 
-Also extract these arguments if present in the query, else use null:
+Also extract these arguments -- from the current query itself, OR resolved
+from the conversation history above if the current query references it
+without naming it (e.g. "that", "it", "the same one"). Otherwise use null:
 - sku: a stock keeping unit identifier, e.g. "SKU-1042".
 - supplier_id: a supplier identifier.
-- criticality_tier: ONLY if the query explicitly names a tier number (e.g. "tier 1", "tier-2", "tier 3"), normalized to "tier1", "tier2", or "tier3". If the query uses vague criticality language ("most critical", "high priority", "least important") WITHOUT naming a specific tier number, return null -- do NOT infer or guess a tier.
+- criticality_tier: a tier explicitly named in the current query, or explicitly named in a history turn the current query is referencing, normalized to "tier1", "tier2", or "tier3". Never infer or guess a tier from vague language ("most critical", "high priority", "least important") that names no tier number anywhere -- in the query or in the history.
 
 Respond with ONLY a JSON object in exactly this shape:
 {{"intent_type": "...", "sku": ... or null, "supplier_id": ... or null, "criticality_tier": ... or null}}
@@ -41,8 +50,9 @@ class Intent(BaseModel):
     sku_resolved: bool = True
 
 
-def classify(query: str) -> Intent:
-    raw = ask(_CLASSIFICATION_PROMPT.format(query=query), json_mode=True)
+def classify(query: str, memory_context: Optional[str] = None) -> Intent:
+    prompt = _CLASSIFICATION_PROMPT.format(query=query, memory_context=memory_context or "(none)")
+    raw = ask(prompt, json_mode=True, temperature=0)
     payload = _extract_json(raw)
     try:
         return Intent(
@@ -121,7 +131,7 @@ def route(intent: Intent) -> str:
     return routes.get(intent.intent_type, "no_tool")
 
 
-def process(query: str) -> Intent:
-    intent = classify(query)
+def process(query: str, memory_context: Optional[str] = None) -> Intent:
+    intent = classify(query, memory_context=memory_context)
     intent = resolve_sku(intent, query)
     return resolve_criticality_tier(intent, query)
