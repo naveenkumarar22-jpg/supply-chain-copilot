@@ -4,6 +4,7 @@ from core.intent import process as classify_intent
 from core.intent import route as route_intent
 from core.io_contract import StructuredResponse
 from core.llm_client import ask
+from core.safety import enforce_suggest_only
 from core.tools.registry import get_tool
 from memory import session_memory
 from retrieval.retriever import retrieve
@@ -58,12 +59,6 @@ def _run_tools(context: dict) -> dict:
     return context
 
 
-def _run_safety(context: dict) -> dict:
-    # TODO(later phase): suggest-only validation gate (Decision #10) —
-    # enforce that the agent only proposes actions, never executes them.
-    return context
-
-
 def _final_answer(context: dict) -> StructuredResponse:
     tool_result = context.get("tool_result")
     retrieved_docs = context.get("retrieved_docs") or []
@@ -100,8 +95,8 @@ def _answer_ungrounded(context: dict) -> StructuredResponse:
         ),
         confidence="low",
         sources=[],
-        limitations=["No matching tool or document for this intent; safety stage is a placeholder."],
-        next_steps=["Wire up the suggest-only safety gate (Decision #10)."],
+        limitations=["No matching tool or document for this intent."],
+        next_steps=[],
     )
 
 
@@ -124,8 +119,8 @@ def _answer_from_tool(context: dict, tool_result: dict) -> StructuredResponse:
         reasoning=reasoning,
         confidence=tool_result.get("confidence", "low"),
         sources=[f"sample dataset ({tool_result['tool']} tool, sku={tool_result.get('sku')})"],
-        limitations=["Safety stage is a placeholder."],
-        next_steps=["Wire up the suggest-only safety gate (Decision #10)."],
+        limitations=[],
+        next_steps=[],
     )
 
 
@@ -146,8 +141,8 @@ def _answer_from_retrieval(context: dict, retrieved_docs: list) -> StructuredRes
         reasoning=f"Retrieved {len(retrieved_docs)} document chunk(s) via metadata-filtered semantic search.",
         confidence="high",
         sources=[f"{doc['id']} ({doc['metadata']['doc_type']}: {doc['metadata']['topic']})" for doc in retrieved_docs],
-        limitations=["Safety stage is a placeholder."],
-        next_steps=["Wire up the suggest-only safety gate (Decision #10)."],
+        limitations=[],
+        next_steps=[],
     )
 
 
@@ -157,7 +152,10 @@ def run(query: str, session_id: str) -> StructuredResponse:
     context = _run_intent(context)
     context = _run_retrieval(context)
     context = _run_tools(context)
-    context = _run_safety(context)
     response = _final_answer(context)
+    # Decision #10: the gate inspects the FINAL answer text, after it's
+    # generated -- every path (tool, retrieval, ungrounded) converges here
+    # before anything is persisted or returned to the caller.
+    response = enforce_suggest_only(response)
     session_memory.persist_turn(session_id, query, context["intent"], response)
     return response
