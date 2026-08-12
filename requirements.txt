@@ -4,3 +4,7 @@ pydantic-settings
 python-dotenv
 faiss-cpu
 numpy
+fastapi
+uvicorn[standard]
+gradio
+requests
