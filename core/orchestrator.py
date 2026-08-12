@@ -86,7 +86,13 @@ def _feedback_block(context: dict) -> str:
 
 def _answer_ungrounded(context: dict) -> StructuredResponse:
     intent = context["intent"]
-    answer_text = ask(context["query"] + _feedback_block(context))
+    memory_context = context.get("memory_context") or "(none)"
+    prompt = (
+        f"Recent conversation history for this session:\n{memory_context}\n\n"
+        f"Question: {context['query']}"
+        f"{_feedback_block(context)}"
+    )
+    answer_text = ask(prompt)
     return StructuredResponse(
         answer=answer_text,
         reasoning=(
