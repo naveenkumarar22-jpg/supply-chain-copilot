@@ -15,6 +15,21 @@ import gradio as gr
 
 from core.orchestrator import run
 
+try:
+    import spaces
+except ImportError:  # package not installed -- e.g. plain local dev without it
+    spaces = None
+
+if spaces is not None:
+    # This app is CPU-only (it just calls the OpenAI API), but ZeroGPU
+    # hardware refuses to start unless it detects at least one
+    # @spaces.GPU-decorated function. This satisfies that platform
+    # requirement only -- it's never called anywhere in the real request
+    # flow (see respond() below), so actual behavior is unchanged.
+    @spaces.GPU
+    def _zerogpu_startup_probe() -> None:
+        return None
+
 # Cost/abuse safeguard for the public demo: a simple in-memory sliding-window
 # limit, same idea as the FastAPI version from the Docker deployment path,
 # just keyed on session_id instead of client IP since this standalone Gradio
