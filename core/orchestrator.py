@@ -92,7 +92,7 @@ def _answer_ungrounded(context: dict) -> StructuredResponse:
         f"Question: {context['query']}"
         f"{_feedback_block(context)}"
     )
-    answer_text = ask(prompt)
+    answer_text = ask(prompt, max_tokens=2000)
     return StructuredResponse(
         answer=answer_text,
         reasoning=(
@@ -114,7 +114,7 @@ def _answer_from_tool(context: dict, tool_result: dict) -> StructuredResponse:
         f"Data: {json.dumps(tool_result, indent=2)}\n"
         f"{_feedback_block(context)}"
     )
-    answer_text = ask(grounded_prompt)
+    answer_text = ask(grounded_prompt, max_tokens=2000)
 
     reasoning = " ".join(tool_result.get("reasoning", [])) or "See tool result."
     if tool_result.get("conflict_note"):
@@ -140,7 +140,7 @@ def _answer_from_retrieval(context: dict, retrieved_docs: list) -> StructuredRes
         f"Documents:\n{context_block}\n"
         f"{_feedback_block(context)}"
     )
-    answer_text = ask(grounded_prompt)
+    answer_text = ask(grounded_prompt, max_tokens=2000)
 
     return StructuredResponse(
         answer=answer_text,

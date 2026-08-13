@@ -85,6 +85,17 @@ with gr.Blocks(title="Supply Chain Operations Copilot") as demo:
             "Ask about supplier delay risk, inventory risk, or company policy/SOP questions. "
             "All recommendations are advisory only -- human approval is required before any action."
         ),
+        # List of single-element lists (not flat strings): ChatInterface
+        # requires list-of-lists when additional_inputs are present. Each
+        # example only fills the message field -- it must never supply a
+        # value for the session_id state, or clicking an example would
+        # overwrite/collide a visitor's real session_id.
+        examples=[
+            ["Is supplier SKU-1042 at risk of delay?"],
+            ["Are any of my parts likely to stock out?"],
+            ["What's our escalation process when a tier-1 supplier is running late?"],
+            ["Is that one still at risk of delay?"],
+        ],
     )
 
 if __name__ == "__main__":
