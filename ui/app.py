@@ -1,10 +1,38 @@
-import os
+import sys
+import time
 import uuid
+from collections import defaultdict, deque
+from pathlib import Path
+from typing import Deque, Dict
+
+# Running this file directly (`python ui/app.py`, or however HF Spaces
+# invokes app_file) only puts this file's own directory on sys.path, not
+# the repo root -- so core/, a sibling top-level package, wouldn't import.
+# Insert the repo root explicitly, before importing anything from it.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import gradio as gr
-import requests
 
-API_URL = os.environ.get("API_URL", "http://127.0.0.1:8000")
+from core.orchestrator import run
+
+# Cost/abuse safeguard for the public demo: a simple in-memory sliding-window
+# limit, same idea as the FastAPI version from the Docker deployment path,
+# just keyed on session_id instead of client IP since this standalone Gradio
+# app has no separate HTTP layer to pull a request/IP from.
+_RATE_LIMIT_WINDOW_SECONDS = 60
+_RATE_LIMIT_MAX_REQUESTS = 10
+_request_log: Dict[str, Deque[float]] = defaultdict(deque)
+
+
+def _rate_limited(session_id: str) -> bool:
+    now = time.time()
+    timestamps = _request_log[session_id]
+    while timestamps and timestamps[0] < now - _RATE_LIMIT_WINDOW_SECONDS:
+        timestamps.popleft()
+    if len(timestamps) >= _RATE_LIMIT_MAX_REQUESTS:
+        return True
+    timestamps.append(now)
+    return False
 
 
 def _format_response(data: dict) -> str:
@@ -24,15 +52,10 @@ def _format_response(data: dict) -> str:
 
 
 def respond(message: str, history, session_id: str) -> str:
-    response = requests.post(
-        f"{API_URL}/query",
-        json={"query": message, "session_id": session_id},
-        timeout=60,
-    )
-    if response.status_code == 429:
-        return response.json().get("detail", "Demo rate limit reached -- please wait a minute and try again.")
-    response.raise_for_status()
-    return _format_response(response.json())
+    if _rate_limited(session_id):
+        return "Demo rate limit reached (10 messages/minute) -- please wait a minute and try again."
+    response = run(query=message, session_id=session_id)
+    return _format_response(response.model_dump())
 
 
 with gr.Blocks(title="Supply Chain Operations Copilot") as demo:
@@ -50,7 +73,7 @@ with gr.Blocks(title="Supply Chain Operations Copilot") as demo:
     )
 
 if __name__ == "__main__":
-    # 0.0.0.0 so the UI is reachable from outside the container (or any
-    # non-localhost client) -- harmless for plain local runs too, since
-    # 0.0.0.0 still accepts connections via 127.0.0.1.
+    # 0.0.0.0 so the UI is reachable from outside the process (Docker, HF
+    # Spaces, etc.) -- harmless for plain local runs too, since 0.0.0.0
+    # still accepts connections via 127.0.0.1.
     demo.launch(server_name="0.0.0.0", server_port=7860)

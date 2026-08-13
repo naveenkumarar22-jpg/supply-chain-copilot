@@ -3,8 +3,9 @@ title: Supply Chain Operations Copilot
 emoji: 📦
 colorFrom: blue
 colorTo: indigo
-sdk: docker
-app_port: 7860
+sdk: gradio
+sdk_version: 6.23.1
+app_file: ui/app.py
 pinned: false
 ---
 
