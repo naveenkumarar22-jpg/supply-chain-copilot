@@ -1,3 +1,13 @@
+---
+title: Supply Chain Operations Copilot
+emoji: 📦
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # Supply Chain Operations Copilot
 
 See `docs/decisions_1.md` for the full architecture decision record.

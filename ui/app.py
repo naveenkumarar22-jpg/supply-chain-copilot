@@ -29,6 +29,8 @@ def respond(message: str, history, session_id: str) -> str:
         json={"query": message, "session_id": session_id},
         timeout=60,
     )
+    if response.status_code == 429:
+        return response.json().get("detail", "Demo rate limit reached -- please wait a minute and try again.")
     response.raise_for_status()
     return _format_response(response.json())
 
@@ -40,10 +42,15 @@ with gr.Blocks(title="Supply Chain Operations Copilot") as demo:
         additional_inputs=[session_id_state],
         title="Supply Chain Operations Copilot",
         description=(
+            "🧪 **Portfolio demo** running on simulated sample data, not a real company's data. "
+            "Limited to 10 messages/minute per visitor. "
             "Ask about supplier delay risk, inventory risk, or company policy/SOP questions. "
             "All recommendations are advisory only -- human approval is required before any action."
         ),
     )
 
 if __name__ == "__main__":
-    demo.launch()
+    # 0.0.0.0 so the UI is reachable from outside the container (or any
+    # non-localhost client) -- harmless for plain local runs too, since
+    # 0.0.0.0 still accepts connections via 127.0.0.1.
+    demo.launch(server_name="0.0.0.0", server_port=7860)
