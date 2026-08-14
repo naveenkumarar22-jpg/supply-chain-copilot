@@ -38,7 +38,7 @@ Test the conversational memory with this ordered pair:
 
 ## Why this project
 
-Most "AI copilots" are a thin wrapper around a language model. The hard part in supply chain isn't calling an LLM — it's **encoding the operational judgment that makes an answer trustworthy**: knowing that an active PO delay and a structurally long lead time are *different kinds* of risk, that conflicting signals shouldn't be silently averaged, that a system near real operations must never quietly take an action.
+Most "AI copilots" are a thin wrapper around a language model. The hard part in supply chain isn't calling an LLM — it's **encoding the operational judgment that makes an answer trustworthy**: knowing that an active PO delay and a structurally long lead time are *different kinds* of risk, that conflicting signals shouldn't be silently averaged, and that a system this close to live operations should propose, never quietly act.
 
 This project is that judgment, built into a production-shaped agentic system — the translation layer between supply-chain domain knowledge and modern AI engineering.
 
@@ -112,7 +112,6 @@ curl http://127.0.0.1:8000/health   # -> {"status":"ok"}
 | `app/` | FastAPI service surface |
 | `ui/` | Gradio interface |
 | `data/` | Sample SKU dataset |
-| `prompts/` | System / tool / safety prompts |
 | `docs/` | Architecture Decision Record (`decisions_1.md`) |
 | `tests/` | Per-stage smoke tests |
 
