@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 660" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0E1726"/>
+      <stop offset="1" stop-color="#0A0F1C"/>
+    </linearGradient>
+    <linearGradient id="respGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1D2C1F"/>
+      <stop offset="1" stop-color="#16241C"/>
+    </linearGradient>
+  </defs>
+
+  <!-- panel -->
+  <rect x="0" y="0" width="1300" height="660" rx="18" fill="url(#bg)"/>
+  <rect x="1" y="1" width="1298" height="658" rx="17" fill="none" stroke="#22304C" stroke-width="1"/>
+
+  <!-- header -->
+  <rect x="40" y="40" width="12" height="12" rx="2" fill="#F2A93B"/>
+  <text x="62" y="51" fill="#F2A93B" font-size="12.5" font-weight="700" letter-spacing="3.5">ARCHITECTURE</text>
+  <text x="40" y="88" fill="#EAF0F8" font-size="30" font-weight="700" letter-spacing="0.2">Supply Chain Operations Copilot</text>
+  <text x="41" y="114" fill="#8A9CB8" font-size="14.5">One converged agentic pipeline &#8212; natural-language query in, decision-ready answer out.</text>
+
+  <!-- ===================== SPINE FLOW ARROWS (amber) ===================== -->
+  <g stroke="#F2A93B" stroke-width="2.4">
+    <line x1="138" y1="298" x2="170" y2="298"/>
+    <line x1="338" y1="298" x2="359" y2="298"/>
+    <line x1="527" y1="298" x2="548" y2="298"/>
+    <line x1="716" y1="298" x2="737" y2="298"/>
+    <line x1="905" y1="298" x2="926" y2="298"/>
+    <line x1="1094" y1="298" x2="1124" y2="298"/>
+  </g>
+  <g fill="#F2A93B">
+    <path d="M170 293 L177 298 L170 303 Z"/>
+    <path d="M359 293 L366 298 L359 303 Z"/>
+    <path d="M548 293 L555 298 L548 303 Z"/>
+    <path d="M737 293 L744 298 L737 303 Z"/>
+    <path d="M926 293 L933 298 L926 303 Z"/>
+    <path d="M1124 293 L1131 298 L1124 303 Z"/>
+  </g>
+
+  <!-- ===================== INPUT TERMINAL ===================== -->
+  <rect x="40" y="248" width="96" height="100" rx="10" fill="#141F33" stroke="#2B3D5E" stroke-width="1"/>
+  <text x="88" y="278" fill="#6C7F9E" font-size="10.5" font-weight="700" letter-spacing="2" text-anchor="middle">INPUT</text>
+  <text x="88" y="304" fill="#EAF0F8" font-size="12.5" font-weight="600" text-anchor="middle">Natural-</text>
+  <text x="88" y="320" fill="#EAF0F8" font-size="12.5" font-weight="600" text-anchor="middle">language</text>
+  <text x="88" y="336" fill="#8A9CB8" font-size="12.5" text-anchor="middle">query</text>
+
+  <!-- ===================== STATION 1 : MEMORY ===================== -->
+  <rect x="176" y="214" width="160" height="168" rx="12" fill="#17233B" stroke="#2B3D5E" stroke-width="1"/>
+  <circle cx="202" cy="244" r="15" fill="#F2A93B"/>
+  <text x="202" y="249" fill="#12203A" font-size="14" font-weight="800" text-anchor="middle">1</text>
+  <text x="232" y="249" fill="#EAF0F8" font-size="15" font-weight="700">Memory recall</text>
+  <text x="192" y="300" fill="#8A9CB8" font-size="12">loads recent turns</text>
+  <text x="192" y="318" fill="#8A9CB8" font-size="12">+ past feedback</text>
+  <rect x="190" y="338" width="132" height="26" rx="6" fill="#0E1A2E" stroke="#26385A" stroke-width="1"/>
+  <text x="256" y="355" fill="#9FB4D2" font-size="11" font-family="'SFMono-Regular', Consolas, monospace" text-anchor="middle">SQLite &#183; session</text>
+
+  <!-- ===================== STATION 2 : INTENT ===================== -->
+  <rect x="365" y="214" width="160" height="168" rx="12" fill="#17233B" stroke="#2B3D5E" stroke-width="1"/>
+  <circle cx="391" cy="244" r="15" fill="#F2A93B"/>
+  <text x="391" y="249" fill="#12203A" font-size="14" font-weight="800" text-anchor="middle">2</text>
+  <text x="421" y="249" fill="#EAF0F8" font-size="15" font-weight="700">Intent routing</text>
+  <text x="381" y="300" fill="#8A9CB8" font-size="12">LLM classifies,</text>
+  <text x="381" y="318" fill="#8A9CB8" font-size="12">code dispatches</text>
+  <rect x="379" y="338" width="132" height="26" rx="6" fill="#0E1A2E" stroke="#26385A" stroke-width="1"/>
+  <text x="445" y="355" fill="#9FB4D2" font-size="11" font-family="'SFMono-Regular', Consolas, monospace" text-anchor="middle">LLM &#183; temp 0</text>
+
+  <!-- ===================== STATION 3 : RETRIEVAL ===================== -->
+  <rect x="554" y="214" width="160" height="168" rx="12" fill="#17233B" stroke="#2B3D5E" stroke-width="1"/>
+  <circle cx="580" cy="244" r="15" fill="#F2A93B"/>
+  <text x="580" y="249" fill="#12203A" font-size="14" font-weight="800" text-anchor="middle">3</text>
+  <text x="610" y="249" fill="#EAF0F8" font-size="15" font-weight="700">Retrieval</text>
+  <text x="570" y="300" fill="#8A9CB8" font-size="12">semantic search</text>
+  <text x="570" y="318" fill="#8A9CB8" font-size="12">over SOP docs</text>
+  <rect x="568" y="338" width="132" height="26" rx="6" fill="#0E1A2E" stroke="#26385A" stroke-width="1"/>
+  <text x="634" y="355" fill="#9FB4D2" font-size="11" font-family="'SFMono-Regular', Consolas, monospace" text-anchor="middle">FAISS &#183; filtered</text>
+
+  <!-- ===================== STATION 4 : TOOLS ===================== -->
+  <rect x="743" y="214" width="160" height="168" rx="12" fill="#17233B" stroke="#2B3D5E" stroke-width="1"/>
+  <circle cx="769" cy="244" r="15" fill="#F2A93B"/>
+  <text x="769" y="249" fill="#12203A" font-size="14" font-weight="800" text-anchor="middle">4</text>
+  <text x="799" y="249" fill="#EAF0F8" font-size="15" font-weight="700">Tools</text>
+  <text x="759" y="300" fill="#8A9CB8" font-size="12">read live supply-</text>
+  <text x="759" y="318" fill="#8A9CB8" font-size="12">chain data</text>
+  <rect x="757" y="338" width="132" height="26" rx="6" fill="#0E1A2E" stroke="#26385A" stroke-width="1"/>
+  <text x="823" y="355" fill="#9FB4D2" font-size="11" font-family="'SFMono-Regular', Consolas, monospace" text-anchor="middle">structured tools</text>
+
+  <!-- ===================== STATION 5 : SAFETY (green) ===================== -->
+  <rect x="932" y="214" width="160" height="168" rx="12" fill="#16241C" stroke="#2F6B4E" stroke-width="1.2"/>
+  <circle cx="958" cy="244" r="15" fill="#34D399"/>
+  <text x="958" y="249" fill="#0B2018" font-size="14" font-weight="800" text-anchor="middle">5</text>
+  <text x="988" y="249" fill="#EAF0F8" font-size="15" font-weight="700">Safety gate</text>
+  <text x="948" y="300" fill="#9DC9B4" font-size="12">blocks executed-</text>
+  <text x="948" y="318" fill="#9DC9B4" font-size="12">action claims</text>
+  <rect x="946" y="338" width="132" height="26" rx="6" fill="#0F2019" stroke="#2F6B4E" stroke-width="1"/>
+  <text x="1012" y="355" fill="#8FD9B5" font-size="11" font-family="'SFMono-Regular', Consolas, monospace" text-anchor="middle">regex &#183; suggest-only</text>
+
+  <!-- ===================== OUTPUT : STRUCTURED RESPONSE ===================== -->
+  <rect x="1130" y="214" width="132" height="168" rx="12" fill="url(#respGrad)" stroke="#C98A2E" stroke-width="1.4"/>
+  <text x="1196" y="240" fill="#F2A93B" font-size="10.5" font-weight="700" letter-spacing="1.2" text-anchor="middle">STRUCTURED</text>
+  <text x="1196" y="255" fill="#F2A93B" font-size="10.5" font-weight="700" letter-spacing="1.2" text-anchor="middle">RESPONSE</text>
+  <g fill="#EAF0F8" font-size="11.5">
+    <circle cx="1150" cy="279" r="2.4" fill="#F2A93B"/><text x="1159" y="283">Answer</text>
+    <circle cx="1150" cy="298" r="2.4" fill="#F2A93B"/><text x="1159" y="302">Reasoning</text>
+    <circle cx="1150" cy="317" r="2.4" fill="#F2A93B"/><text x="1159" y="321">Confidence</text>
+    <circle cx="1150" cy="336" r="2.4" fill="#F2A93B"/><text x="1159" y="340">Sources</text>
+    <circle cx="1150" cy="355" r="2.4" fill="#F2A93B"/><text x="1159" y="359">Limitations</text>
+    <circle cx="1150" cy="374" r="2.4" fill="#F2A93B"/><text x="1159" y="378">Next steps</text>
+  </g>
+
+  <!-- ===================== GROUNDING LAYER LABEL ===================== -->
+  <text x="40" y="440" fill="#6C7F9E" font-size="11" font-weight="700" letter-spacing="2.5">GROUNDING &#183; DATA STORES</text>
+  <line x1="238" y1="435" x2="1260" y2="435" stroke="#1C2A44" stroke-width="1"/>
+
+  <!-- feeder connectors (cyan, dashed, pointing up into stations) -->
+  <g stroke="#5AA9D6" stroke-width="1.6" stroke-dasharray="4 4">
+    <line x1="256" y1="470" x2="256" y2="390"/>
+    <line x1="634" y1="470" x2="634" y2="390"/>
+    <line x1="823" y1="470" x2="823" y2="390"/>
+  </g>
+  <g fill="#5AA9D6">
+    <path d="M251 390 L256 383 L261 390 Z"/>
+    <path d="M629 390 L634 383 L639 390 Z"/>
+    <path d="M818 390 L823 383 L828 390 Z"/>
+  </g>
+
+  <!-- DB cylinder: memory (under S1) center 256 -->
+  <g>
+    <path d="M198 478 v46 a58 9 0 0 0 116 0 v-46" fill="#122238" stroke="#33517A" stroke-width="1"/>
+    <ellipse cx="256" cy="478" rx="58" ry="9" fill="#16283F" stroke="#3B6EA0" stroke-width="1.2"/>
+    <text x="256" y="512" fill="#CFE0F2" font-size="12.5" font-weight="600" text-anchor="middle">SQLite</text>
+    <text x="256" y="548" fill="#7E93B2" font-size="11" text-anchor="middle">session memory</text>
+    <text x="256" y="563" fill="#7E93B2" font-size="11" text-anchor="middle">+ feedback</text>
+  </g>
+
+  <!-- DB cylinder: FAISS (under S3) center 634 -->
+  <g>
+    <path d="M576 478 v46 a58 9 0 0 0 116 0 v-46" fill="#122238" stroke="#33517A" stroke-width="1"/>
+    <ellipse cx="634" cy="478" rx="58" ry="9" fill="#16283F" stroke="#3B6EA0" stroke-width="1.2"/>
+    <text x="634" y="512" fill="#CFE0F2" font-size="12.5" font-weight="600" text-anchor="middle">FAISS index</text>
+    <text x="634" y="548" fill="#7E93B2" font-size="11" text-anchor="middle">SOP / policy docs</text>
+    <text x="634" y="563" fill="#7E93B2" font-size="11" text-anchor="middle">(metadata-tagged)</text>
+  </g>
+
+  <!-- DB cylinder: sample data (under S4) center 823 -->
+  <g>
+    <path d="M765 478 v46 a58 9 0 0 0 116 0 v-46" fill="#122238" stroke="#33517A" stroke-width="1"/>
+    <ellipse cx="823" cy="478" rx="58" ry="9" fill="#16283F" stroke="#3B6EA0" stroke-width="1.2"/>
+    <text x="823" y="512" fill="#CFE0F2" font-size="12.5" font-weight="600" text-anchor="middle">Sample dataset</text>
+    <text x="823" y="548" fill="#7E93B2" font-size="11" text-anchor="middle">14-SKU catalog</text>
+    <text x="823" y="563" fill="#7E93B2" font-size="11" text-anchor="middle">(POs, lead times)</text>
+  </g>
+
+  <!-- footer principle strip -->
+  <line x1="40" y1="600" x2="1260" y2="600" stroke="#1C2A44" stroke-width="1"/>
+  <text x="40" y="628" fill="#8A9CB8" font-size="12.5">
+    <tspan fill="#F2A93B" font-weight="700">LLM interprets</tspan><tspan> &#183; </tspan><tspan fill="#EAF0F8" font-weight="600">deterministic Python enforces</tspan><tspan>  the routing, memory match and safety boundary</tspan>
+  </text>
+  <text x="1260" y="628" fill="#34D399" font-size="12.5" font-weight="600" text-anchor="end">Advisory only &#8212; proposes, never executes</text>
+</svg>

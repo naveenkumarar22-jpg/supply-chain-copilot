@@ -59,27 +59,7 @@ Every answer returns in the same audit-ready shape — **Answer · Reasoning · 
 
 A single **converged orchestrator** processes each query through five stages, each handing off to the next:
 
-```
-Query
-  |
-  v
-[ Memory recall ] --- load recent turns + situationally-relevant feedback (SQLite)
-  |
-  v
-[ Intent routing ] -- LLM classifies the query into structured fields;
-  |                    deterministic Python dispatches on the result
-  v
-[ Retrieval ] ------- metadata-filtered semantic search over SOP/policy docs (FAISS)
-  |
-  v
-[ Tools ] ----------- structured supply-chain tools read the sample data
-  |
-  v
-[ Safety gate ] ----- deterministic "suggest-only" enforcement
-  |
-  v
-Structured response  (Answer . Reasoning . Confidence . Sources . Limitations . Next steps)
-```
+![Architecture: converged agentic pipeline](docs/architecture.svg)
 
 ### Engineering decisions worth calling out
 
