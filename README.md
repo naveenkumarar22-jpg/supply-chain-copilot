@@ -1,17 +1,8 @@
----
-title: Supply Chain Operations Copilot
-emoji: 📦
-colorFrom: blue
-colorTo: indigo
-sdk: gradio
-sdk_version: 6.23.1
-app_file: ui/app.py
-pinned: false
----
+
 
 # 📦 Supply Chain Operations Copilot
 
-**An agentic AI decision-support copilot for supply chain operations** — built at the intersection of real manufacturing/supply-chain domain expertise and production-grade agentic AI engineering.
+**An agentic AI decision-support copilot for supply chain operations** — built at the intersection of real manufacturing/supply-chain domain expertise and production-minded agentic AI engineering.
 
 It answers operational questions in plain language — supplier delay risk, inventory stock-out risk, company policy/SOPs — grounds every answer in actual data, remembers the conversation, and stays strictly advisory: **it proposes, it never acts.**
 
