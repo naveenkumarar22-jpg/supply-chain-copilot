@@ -1,5 +1,6 @@
 import sys
 import time
+import traceback
 import uuid
 from collections import defaultdict, deque
 from pathlib import Path
@@ -66,10 +67,44 @@ def _format_response(data: dict) -> str:
     return "\n".join(lines)
 
 
+# Markers that identify an exhausted/limited OpenAI account, as they appear
+# in the provider's error payload (core.llm_client re-raises it as the text
+# of a RuntimeError, so substring matching is the available signal).
+_QUOTA_MARKERS = ("insufficient_quota", "credit_balance_exhausted", "exceeded your current quota")
+_RATE_LIMIT_MARKERS = ("rate_limit_exceeded", "429")
+
+
+def _friendly_error(exc: Exception) -> str:
+    detail = str(exc)
+    if any(marker in detail for marker in _QUOTA_MARKERS):
+        return (
+            "⚠️ **This demo's OpenAI API quota is currently exhausted**, so the copilot can't "
+            "answer right now. This is a billing limit on the demo account, not a fault in your "
+            "question -- please check back later."
+        )
+    if any(marker in detail for marker in _RATE_LIMIT_MARKERS):
+        return (
+            "⚠️ **The demo is being rate limited by the model provider.** Please wait a moment "
+            "and send your question again."
+        )
+    return (
+        "⚠️ **Something went wrong handling that question.** The error has been logged. "
+        "Please try again, or try one of the suggested prompts."
+    )
+
+
 def respond(message: str, history, session_id: str) -> str:
     if _rate_limited(session_id):
         return "Demo rate limit reached (10 messages/minute) -- please wait a minute and try again."
-    response = run(query=message, session_id=session_id)
+    try:
+        response = run(query=message, session_id=session_id)
+    except Exception as exc:
+        # An uncaught exception reaches a visitor as Gradio's bare red "Error"
+        # box -- no cause, indistinguishable from any other failure. Print the
+        # traceback (it lands in the Space logs, where it's actually useful)
+        # and return a readable explanation in the chat instead.
+        traceback.print_exc()
+        return _friendly_error(exc)
     return _format_response(response.model_dump())
 
 

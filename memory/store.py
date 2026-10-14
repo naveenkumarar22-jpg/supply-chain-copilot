@@ -5,6 +5,11 @@ from typing import List, Optional
 
 from config.settings import settings
 
+# Relative paths resolve against the repo root; an absolute MEMORY_DB_PATH
+# overrides that entirely (pathlib drops the left side when the right side is
+# absolute). That's the hook for pointing the DB at mounted persistent storage
+# -- e.g. MEMORY_DB_PATH=/data/memory.db on a Space with a persistent disk,
+# since the default location is wiped on every container restart.
 _DB_PATH = Path(__file__).resolve().parents[1] / settings.memory_db_path
 
 
